@@ -10,7 +10,10 @@ import GetStarted from './pages/Home/components/Getstarted';
 import BrowseLoads from './pages/Home/components/BrowsePage/BrowseLoads';
 import AboutUs from './pages/About/Aboutus'; 
 import ContactUs from './pages/Contact/Contactus'; 
-import Profile from './pages/auth/Profile'; 
+import Profile from './pages/auth/Profile';
+import Payment from "./pages/Dashboard/Shipper/Payment";
+import { Elements } from "@stripe/react-stripe-js";
+import { stripePromise } from "./stripe";
 
 
 function App() {
@@ -29,7 +32,15 @@ function App() {
           <Route path="/about" element={<AboutUs />} /> 
           <Route path="/contact" element={<ContactUs />} /> 
           <Route path="/profile" element={<Profile />} /> 
-          
+    
+          <Route
+          path="/payment"
+          element={
+            <Elements stripe={stripePromise}>
+              <Payment />
+            </Elements>
+          }
+        />
         </Routes>
       </div>
     </Router>

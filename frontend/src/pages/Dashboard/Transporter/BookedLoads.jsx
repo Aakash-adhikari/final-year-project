@@ -1,10 +1,13 @@
+// BookedLoads.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const BookedLoads = () => {
   const [loads, setLoads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBookedLoads = async () => {
@@ -26,6 +29,10 @@ const BookedLoads = () => {
     fetchBookedLoads();
   }, []);
 
+  const handlePayBid = (loadId, bidId) => {
+    navigate(`/payment?loadId=${loadId}&bidId=${bidId}`);
+  };
+
   if (loading) return <p className="text-gray-600">Loading booked loads...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
@@ -37,7 +44,7 @@ const BookedLoads = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {loads.map((load) => {
-            const acceptedBid = load.bids.find(bid => bid.status === 'accepted');
+            const acceptedBid = load.bids.find((bid) => bid.status === "accepted");
             return (
               <div key={load._id} className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
                 <h4 className="text-lg font-medium text-gray-900">{load.title}</h4>
@@ -52,9 +59,17 @@ const BookedLoads = () => {
                   Booked By: {load.bookedBy ? load.bookedBy.fullName : "Unknown"}
                 </p>
                 {acceptedBid && (
-                  <p className="text-sm text-gray-600 mt-2">
-                    Accepted Bid Price: ${acceptedBid.amount}
-                  </p>
+                  <>
+                    <p className="text-sm text-gray-600 mt-2">
+                      Accepted Bid Price: ${acceptedBid.amount}
+                    </p>
+                    <button
+                      onClick={() => handlePayBid(load._id, acceptedBid._id)}
+                      className="mt-2 px-4 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                    >
+                      Pay Bid
+                    </button>
+                  </>
                 )}
               </div>
             );

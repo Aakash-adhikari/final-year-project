@@ -97,7 +97,7 @@ const CreateAccount = () => {
       // Store the token in localStorage for auto-login
       localStorage.setItem("authToken", response.data.token);
 
-      setTimeout(() => navigate("/profile"), 2000); // Redirect to profile instead of login
+      setTimeout(() => navigate("/login"), 2000); // Redirect to profile instead of login
     } catch (err) {
       if (err.name === "ValidationError") {
         const validationErrors = {};

@@ -1,4 +1,6 @@
 const Load = require('../models/Load');
+const Payment = require('../models/Payment');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const User = require('../models/User');
 const mongoose = require('mongoose');
 
@@ -212,6 +214,13 @@ const unsaveLoad = async (req, res) => {
     const loadId = req.params.id;
     const userId = req.user.id;
 
+    if (!mongoose.Types.ObjectId.isValid(loadId)) {
+      return res.status(400).json({ message: 'Invalid load ID format' });
+    }
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'Invalid user ID format' });
+    }
+
     const load = await Load.findById(loadId);
     if (!load) return res.status(404).json({ message: 'Load not found' });
     if (!load.savedBy.includes(userId)) return res.status(400).json({ message: 'Load not saved by this user' });
@@ -319,11 +328,32 @@ const acceptBid = async (req, res) => {
     bid.status = 'accepted';
     load.bookedBy = bid.transporter;
     load.bids.forEach(b => { if (b._id.toString() !== bidId) b.status = 'rejected'; });
+
     await load.save();
 
-    res.status(200).json({ message: 'Bid accepted successfully', load });
+    // Trigger payment creation when the bid is accepted
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: load.price * 100, // Amount in cents
+      currency: 'usd',
+      metadata: {
+        loadId: load._id.toString(),
+        transporterId: bid.transporter.toString()
+      }
+    });
+
+    // Save payment record
+    const payment = new Payment({
+      load: load._id,
+      transporter: bid.transporter,
+      amount: load.price,
+      paymentIntentId: paymentIntent.id
+    });
+
+    await payment.save();
+
+    res.status(200).json({ message: 'Bid accepted and payment created', paymentIntentClientSecret: paymentIntent.client_secret });
   } catch (error) {
-    console.error("Error in acceptBid:", error.message, error.stack);
+    console.error('Error in acceptBid:', error);
     res.status(500).json({ message: 'Error accepting bid', error: error.message });
   }
 };

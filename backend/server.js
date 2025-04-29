@@ -22,8 +22,13 @@ const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
 const loadRoutes = require('./routes/loadRoutes');  
-app.use('/api/loads', loadRoutes);  
+app.use('/api/loads', loadRoutes); 
 
+const paymentRoutes = require('./routes/paymentRoutes')
+app.use('/api/payment', paymentRoutes)
+
+const notification = require('./routes/notifications')
+app.use('/api/notify',notification)
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
