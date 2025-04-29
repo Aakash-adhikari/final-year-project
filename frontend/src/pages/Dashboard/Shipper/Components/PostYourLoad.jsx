@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios'; // Import axios
+import axios from 'axios';
 
 const PostYourLoad = () => {
   const [loadDetails, setLoadDetails] = useState({
@@ -8,6 +8,7 @@ const PostYourLoad = () => {
     weight: '',
     pickupLocation: '',
     destination: '',
+    price: '', // Ensure this is a string initially to match the input type
     description: '',
     contactInfo: '',
   });
@@ -27,12 +28,23 @@ const PostYourLoad = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!loadDetails.title) newErrors.title = 'Title is required.';
+    if (!loadDetails.title.trim()) newErrors.title = 'Title is required.';
     if (!loadDetails.loadType) newErrors.loadType = 'Load type is required.';
-    if (!loadDetails.weight || isNaN(loadDetails.weight)) newErrors.weight = 'Valid weight is required.';
-    if (!loadDetails.pickupLocation) newErrors.pickupLocation = 'Pickup location is required.';
-    if (!loadDetails.destination) newErrors.destination = 'Destination is required.';
-    if (!loadDetails.contactInfo) newErrors.contactInfo = 'Contact info is required.';
+    
+    const parsedWeight = Number(loadDetails.weight);
+    if (!loadDetails.weight || isNaN(parsedWeight) || parsedWeight <= 0) {
+      newErrors.weight = 'Valid weight greater than 0 is required.';
+    }
+
+    const parsedPrice = Number(loadDetails.price);
+    if (!loadDetails.price || isNaN(parsedPrice) || parsedPrice <= 0) {
+      newErrors.price = 'Valid price greater than 0 is required.';
+    }
+
+    if (!loadDetails.pickupLocation.trim()) newErrors.pickupLocation = 'Pickup location is required.';
+    if (!loadDetails.destination.trim()) newErrors.destination = 'Destination is required.';
+    if (!loadDetails.contactInfo.trim()) newErrors.contactInfo = 'Contact info is required.';
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -48,9 +60,22 @@ const PostYourLoad = () => {
         const token = localStorage.getItem("authToken");
         if (!token) throw new Error("No auth token found. Please log in.");
 
+        const payload = {
+          title: loadDetails.title.trim(),
+          loadType: loadDetails.loadType,
+          weight: Number(loadDetails.weight),
+          pickupLocation: loadDetails.pickupLocation.trim(),
+          destination: loadDetails.destination.trim(),
+          price: Number(loadDetails.price), // Ensure price is a number
+          description: loadDetails.description.trim() || undefined,
+          contactInfo: loadDetails.contactInfo.trim(),
+        };
+
+        console.log("Payload being sent:", payload); // Debug log to inspect the payload
+
         const response = await axios.post(
           'http://localhost:5001/api/loads/post-loads',
-          loadDetails,
+          payload,
           {
             headers: {
               'Content-Type': 'application/json',
@@ -66,12 +91,17 @@ const PostYourLoad = () => {
           weight: '',
           pickupLocation: '',
           destination: '',
+          price: '',
           description: '',
           contactInfo: '',
         });
       } catch (error) {
-        console.error("Post load error:", error.response || error);
-        setErrorMessage(error.response?.data?.msg || error.message || 'Failed to connect to the server.');
+        console.error("Post load error:", {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status,
+        });
+        setErrorMessage(error.response?.data?.msg || error.response?.data?.message || error.message || 'Failed to connect to the server.');
       }
     }
 
@@ -127,9 +157,27 @@ const PostYourLoad = () => {
                   className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                   placeholder="Weight of the goods"
                   aria-describedby="weightError"
+                  min="1"
                 />
                 {errors.weight && <p className="text-red-600 text-sm mt-1" id="weightError">{errors.weight}</p>}
               </div>
+              <div className="flex-1">
+                <label className="block text-lg font-medium text-gray-800 mb-2">Price (USD)</label>
+                <input
+                  type="number"
+                  name="price"
+                  value={loadDetails.price}
+                  onChange={handleInputChange}
+                  className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  placeholder="Price for the load"
+                  aria-describedby="priceError"
+                  min="1"
+                />
+                {errors.price && <p className="text-red-600 text-sm mt-1" id="priceError">{errors.price}</p>}
+              </div>
+            </div>
+
+            <div className="flex gap-4">
               <div className="flex-1">
                 <label className="block text-lg font-medium text-gray-800 mb-2">Pickup Location</label>
                 <input
@@ -143,9 +191,6 @@ const PostYourLoad = () => {
                 />
                 {errors.pickupLocation && <p className="text-red-600 text-sm mt-1" id="pickupLocationError">{errors.pickupLocation}</p>}
               </div>
-            </div>
-
-            <div className="flex gap-4">
               <div className="flex-1">
                 <label className="block text-lg font-medium text-gray-800 mb-2">Destination</label>
                 <input
@@ -159,6 +204,9 @@ const PostYourLoad = () => {
                 />
                 {errors.destination && <p className="text-red-600 text-sm mt-1" id="destinationError">{errors.destination}</p>}
               </div>
+            </div>
+
+            <div className="flex gap-4">
               <div className="flex-1">
                 <label className="block text-lg font-medium text-gray-800 mb-2">Your Contact Info</label>
                 <input

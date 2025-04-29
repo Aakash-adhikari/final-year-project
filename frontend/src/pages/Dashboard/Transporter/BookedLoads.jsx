@@ -9,13 +9,17 @@ const BookedLoads = () => {
   useEffect(() => {
     const fetchBookedLoads = async () => {
       try {
+        const token = localStorage.getItem("authToken");
+        if (!token) throw new Error("No auth token found. Please log in.");
+
         const response = await axios.get("http://localhost:5001/api/loads/booked-loads", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
         setLoads(response.data);
         setLoading(false);
       } catch (err) {
-        setError("Failed to fetch booked loads.");
+        console.error("Fetch booked loads error:", err.response || err);
+        setError(err.response?.data?.msg || err.message || "Failed to fetch booked loads.");
         setLoading(false);
       }
     };
@@ -32,18 +36,29 @@ const BookedLoads = () => {
         <p className="text-gray-600">No booked loads yet.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {loads.map((load) => (
-            <div
-              key={load._id}
-              className="bg-white p-4 rounded-lg shadow-md border border-gray-200"
-            >
-              <h4 className="text-lg font-medium text-gray-900">{load.title}</h4>
-              <p className="text-sm text-gray-600">Type: {load.loadType}</p>
-              <p className="text-sm text-gray-600">Weight: {load.weight} lbs</p>
-              <p className="text-sm text-gray-600">Pickup: {load.pickupLocation}</p>
-              <p className="text-sm text-gray-600">Destination: {load.destination}</p>
-            </div>
-          ))}
+          {loads.map((load) => {
+            const acceptedBid = load.bids.find(bid => bid.status === 'accepted');
+            return (
+              <div key={load._id} className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                <h4 className="text-lg font-medium text-gray-900">{load.title}</h4>
+                <p className="text-sm text-gray-600">Type: {load.loadType}</p>
+                <p className="text-sm text-gray-600">Weight: {load.weight} lbs</p>
+                <p className="text-sm text-gray-600">Pickup: {load.pickupLocation}</p>
+                <p className="text-sm text-gray-600">Destination: {load.destination}</p>
+                <p className="text-sm text-gray-600">Price: ${load.price}</p>
+                {load.description && <p className="text-sm text-gray-600">Description: {load.description}</p>}
+                <p className="text-sm text-gray-600">Contact: {load.contactInfo}</p>
+                <p className="text-sm text-gray-600 mt-2">
+                  Booked By: {load.bookedBy ? load.bookedBy.fullName : "Unknown"}
+                </p>
+                {acceptedBid && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    Accepted Bid Price: ${acceptedBid.amount}
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

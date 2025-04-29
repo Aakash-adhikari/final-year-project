@@ -7,6 +7,8 @@ const authMiddleware = require('../middleware/authMiddleware');
 router.post('/post-loads', authMiddleware, loadController.createLoad);
 router.get('/get-loads', authMiddleware, loadController.getAllLoads); // Protected now
 router.delete('/delete-loads/:id', authMiddleware, loadController.deleteLoad);
+router.put('/:id', authMiddleware, loadController.editLoad);
+
 // router.post('/book-load/:id', authMiddleware, loadController.bookLoad);
 router.post('/save-load/:id', authMiddleware, loadController.saveLoad);
 router.get('/saved-loads', authMiddleware, loadController.getSavedLoads);

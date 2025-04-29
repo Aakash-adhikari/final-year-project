@@ -1,4 +1,3 @@
-// models/Load.js
 const mongoose = require('mongoose');
 
 const loadSchema = new mongoose.Schema({
@@ -7,11 +6,12 @@ const loadSchema = new mongoose.Schema({
   weight: { type: Number, required: true },
   pickupLocation: { type: String, required: true },
   destination: { type: String, required: true },
+  price: { type: Number, required: true }, // New field for price
   description: { type: String, required: false },
   contactInfo: { type: String, required: true },
   bookedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   savedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Added for shipper tracking
+  postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   bids: [{
     transporter: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     amount: { type: Number, required: true },

@@ -25,11 +25,11 @@ const ShipperDashboard = () => {
                   { id: "post-load", label: "Post Load", icon: <FaPlusCircle /> },
                   { id: "view-loads", label: "View Loads", icon: <FaEye /> },
                   { id: "orders", label: "Orders", icon: <FaBoxOpen /> },
-                  { id: "profile-settings", label: "Profile Settings", icon: <FaCog /> },
+                  { id: "profile-settings", label: "Profile Settings", icon: <FaCog />, path: "/profile" },
                 ].map((item) => (
                   <li key={item.id}>
                     <Link
-                      to="#"
+                      to={item.path || "#"}
                       onClick={() => setActiveSection(item.id)}
                       className={`flex items-center space-x-2 text-base font-medium ${
                         activeSection === item.id ? "text-yellow-600" : "text-gray-600"
@@ -60,7 +60,7 @@ const ShipperDashboard = () => {
               {activeSection === "view-loads" && <ViewLoads />}
               {activeSection === "orders" && <Orders />}
               {activeSection === "profile-settings" && (
-                <p className="text-gray-600">Update your profile details here.</p>
+                <p className="text-gray-600">Redirecting to profile page...</p>
               )}
             </div>
           </div>

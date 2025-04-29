@@ -5,6 +5,7 @@ const SearchLoads = () => {
   const [loads, setLoads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [bidAmounts, setBidAmounts] = useState({});
 
   useEffect(() => {
@@ -30,14 +31,18 @@ const SearchLoads = () => {
   const handleSave = async (loadId) => {
     try {
       const token = localStorage.getItem("authToken");
-      await axios.post(
+      const response = await axios.post(
         `http://localhost:5001/api/loads/save-load/${loadId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert("Load saved successfully!");
+      setLoads(loads.map((load) => (load._id === loadId ? response.data.load : load)));
+      setSuccessMessage("Load saved successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err) {
+      console.error("Error saving load:", err);
       setError(err.response?.data?.msg || "Error saving load.");
+      setTimeout(() => setError(""), 3000);
     }
   };
 
@@ -45,6 +50,7 @@ const SearchLoads = () => {
     const amount = bidAmounts[loadId];
     if (!amount || amount <= 0) {
       setError("Please enter a valid bid amount.");
+      setTimeout(() => setError(""), 3000);
       return;
     }
     try {
@@ -56,9 +62,12 @@ const SearchLoads = () => {
       );
       setLoads(loads.map((load) => (load._id === loadId ? response.data.load : load)));
       setBidAmounts({ ...bidAmounts, [loadId]: "" });
-      alert("Bid placed successfully!");
+      setSuccessMessage("Bid placed successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err) {
+      console.error("Error placing bid:", err);
       setError(err.response?.data?.msg || "Error placing bid.");
+      setTimeout(() => setError(""), 3000);
     }
   };
 
@@ -72,6 +81,8 @@ const SearchLoads = () => {
   return (
     <div>
       <h3 className="text-xl font-semibold text-gray-800 mb-4">Available Loads</h3>
+      {successMessage && <p className="text-green-600 mb-4">{successMessage}</p>}
+      {error && <p className="text-red-500 mb-4">{error}</p>}
       {loads.length === 0 ? (
         <p className="text-gray-600">No loads available at the moment.</p>
       ) : (
@@ -83,11 +94,23 @@ const SearchLoads = () => {
               <p className="text-sm text-gray-600">Weight: {load.weight} lbs</p>
               <p className="text-sm text-gray-600">Pickup: {load.pickupLocation}</p>
               <p className="text-sm text-gray-600">Destination: {load.destination}</p>
-              {load.description && <p className="text-sm text-gray-600 mt-2">{load.description}</p>}
+              <p className="text-sm text-gray-600">Price: ${load.price}</p>
+              {load.description && <p className="text-sm text-gray-600 mt-2">Description: {load.description}</p>}
               <p className="text-sm text-gray-600 mt-2">Contact: {load.contactInfo}</p>
+
+              {/* Display existing bid status if any */}
+              {load.bids && load.bids.some(bid => bid.transporter._id === localStorage.getItem("userId")) ? (
+                load.bids
+                  .filter(bid => bid.transporter._id === localStorage.getItem("userId"))
+                  .map(bid => (
+                    <p key={bid._id} className={`text-sm mt-2 ${bid.status === 'rejected' ? 'text-red-600' : bid.status === 'accepted' ? 'text-green-600' : 'text-gray-600'}`}>
+                      Your Bid: ${bid.amount} - Status: {bid.status}
+                    </p>
+                  ))
+              ) : null}
+
               <div className="mt-4 flex flex-col space-y-2">
                 <div className="flex space-x-2">
-                  {/* Removed Book button */}
                   <button
                     onClick={() => handleSave(load._id)}
                     className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
@@ -102,6 +125,7 @@ const SearchLoads = () => {
                     onChange={(e) => handleBidAmountChange(load._id, e.target.value)}
                     placeholder="Enter bid amount"
                     className="p-2 border rounded-md w-32"
+                    min="1"
                     disabled={load.bookedBy}
                   />
                   <button

@@ -17,7 +17,6 @@ const userSchema = new mongoose.Schema({
   },
   confirmPassword: {
     type: String,
-    required: true,
   },
   role: {
     type: String,
@@ -48,16 +47,18 @@ const userSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-// Pre-save middleware to hash the password before saving the user
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  this.confirmPassword = undefined; // Don't save confirmPassword
+// Hash password before saving
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    // If confirmPassword is provided, hash it too (optional)
+    if (this.confirmPassword) {
+      this.confirmPassword = await bcrypt.hash(this.confirmPassword, salt);
+    }
+  }
   next();
 });
-
 // Method to compare entered password with the hashed one
 userSchema.methods.isPasswordCorrect = async function (enteredPassword) {
   const match = await bcrypt.compare(enteredPassword, this.password);

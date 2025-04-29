@@ -37,7 +37,7 @@ const ViewBids = () => {
       ) : (
         <div className="space-y-4">
           {loads.map((load) => {
-            const userBid = load.bids.find(bid => bid.transporter._id === localStorage.getItem("userId")); // Assuming userId is stored
+            const userBid = load.bids.find(bid => bid.transporter._id === localStorage.getItem("userId"));
             return (
               <div key={load._id} className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
                 <h4 className="text-lg font-medium text-gray-900">{load.title}</h4>
@@ -45,8 +45,11 @@ const ViewBids = () => {
                 <p className="text-sm text-gray-600">Weight: {load.weight} lbs</p>
                 <p className="text-sm text-gray-600">Pickup: {load.pickupLocation}</p>
                 <p className="text-sm text-gray-600">Destination: {load.destination}</p>
+                <p className="text-sm text-gray-600">Price: ${load.price}</p>
+                {load.description && <p className="text-sm text-gray-600 mt-2">Description: {load.description}</p>}
+                <p className="text-sm text-gray-600 mt-2">Contact: {load.contactInfo}</p>
                 {userBid && (
-                  <p className="text-sm text-gray-600 mt-2">
+                  <p className={`text-sm text-gray-600 mt-2 ${userBid.status === 'rejected' ? 'text-red-600' : userBid.status === 'accepted' ? 'text-green-600' : 'text-gray-600'}`}>
                     Your Bid: ${userBid.amount} - Status: {userBid.status}
                   </p>
                 )}

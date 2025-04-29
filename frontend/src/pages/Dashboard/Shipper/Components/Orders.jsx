@@ -15,6 +15,7 @@ const Orders = () => {
         const response = await axios.get("http://localhost:5001/api/loads/shipper-orders", {
           headers: { Authorization: `Bearer ${token}` },
         });
+        console.log("Raw API response (shipper orders):", response.data); // Debug log
         setLoads(response.data);
         setLoading(false);
       } catch (err) {
@@ -71,6 +72,7 @@ const Orders = () => {
               <p className="text-sm text-gray-600">Weight: {load.weight} lbs</p>
               <p className="text-sm text-gray-600">Pickup: {load.pickupLocation}</p>
               <p className="text-sm text-gray-600">Destination: {load.destination}</p>
+              <p className="text-sm text-gray-600">Created At: {new Date(load.createdAt).toLocaleString()}</p> {/* Display createdAt for debugging */}
               <p className="text-sm text-gray-600 mt-2">
                 Booked By: {load.bookedBy ? load.bookedBy.fullName : "Not booked yet"}
               </p>

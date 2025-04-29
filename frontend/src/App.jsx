@@ -10,6 +10,8 @@ import GetStarted from './pages/Home/components/Getstarted';
 import BrowseLoads from './pages/Home/components/BrowsePage/BrowseLoads';
 import AboutUs from './pages/About/Aboutus'; 
 import ContactUs from './pages/Contact/Contactus'; 
+import Profile from './pages/auth/Profile'; 
+
 
 function App() {
   return (
@@ -26,6 +28,8 @@ function App() {
           <Route path="/browse-loads" element={<BrowseLoads />} />
           <Route path="/about" element={<AboutUs />} /> 
           <Route path="/contact" element={<ContactUs />} /> 
+          <Route path="/profile" element={<Profile />} /> 
+          
         </Routes>
       </div>
     </Router>
